@@ -1,0 +1,55 @@
+diff --git a/arch/sim/Makefile b/arch/sim/Makefile
+index 032ebb4..b8e9054 100644
+--- a/arch/sim/Makefile
++++ b/arch/sim/Makefile
+@@ -79,7 +79,8 @@ lib/_to_keep=klist.o kobject.o kref.o hweight.o int_sqrt.o checksum.o \
+ find_last_bit.o find_next_bit.o bitmap.o nlattr.o idr.o libcrc32c.o \
+ ctype.o string.o kasprintf.o rbtree.o sha1.o textsearch.o vsprintf.o \
+ rwsem-spinlock.o scatterlist.o ratelimit.o hexdump.o dec_and_lock.o \
+-div64.o dynamic_queue_limits.o md5.o kstrtox.o iovec.o lockref.o crc32.o
++div64.o dynamic_queue_limits.o md5.o kstrtox.o iovec.o lockref.o crc32.o \
++flex_array.o reciprocal_div.o rhashtable.o hash.o
+ fs/_to_keep=read_write.o libfs.o namei.o
+ fs/proc/_to_keep=proc_sysctl.o
+ 
+diff --git a/arch/sim/defconfig b/arch/sim/defconfig
+index d7a2d13..8f75142 100644
+--- a/arch/sim/defconfig
++++ b/arch/sim/defconfig
+@@ -153,6 +153,7 @@ CONFIG_PHONET=m
+ # CONFIG_DCB is not set
+ CONFIG_IP_SCTP=y
+ CONFIG_SCTP_DEFAULT_COOKIE_HMAC_NONE=y
++CONFIG_OPENVSWITCH=y
+ 
+ #
+ # Network testing
+diff --git a/arch/sim/sim-socket.c b/arch/sim/sim-socket.c
+index c881699..8f7a5cf 100644
+--- a/arch/sim/sim-socket.c
++++ b/arch/sim/sim-socket.c
+@@ -166,6 +166,10 @@ int sim_sock_ioctl (struct SimSocket *socket, int request, char *argp)
+    */
+   if (err == -ENOIOCTLCMD)
+     err = dev_ioctl(net, request, argp);
++
++  if (err == -ENOTTY)
++    return 0;
++
+   return err;
+ }
+ int sim_sock_setsockopt (struct SimSocket *socket, int level, int optname,
+diff --git a/arch/sim/sysfs.c b/arch/sim/sysfs.c
+index ad56c32..81fa65c 100644
+--- a/arch/sim/sysfs.c
++++ b/arch/sim/sysfs.c
+@@ -52,6 +52,9 @@ int sysfs_schedule_callback(struct kobject *kobj,
+ void sysfs_delete_link(struct kobject *dir, struct kobject *targ,
+ 			const char *name)
+ {}
++void sysfs_remove_link(struct kobject *kobj, const char *name)
++{}
++
+ void sysfs_exit_ns(enum kobj_ns_type type, const void *tag)
+ {}
+ void sysfs_notify(struct kobject *kobj, const char *dir, const char *attr)
